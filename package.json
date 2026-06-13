@@ -1,6 +1,6 @@
 {
   "name": "convex-route-query",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Type-safe Convex query helpers for TanStack Router loaders and React Query Suspense.",
   "type": "module",
   "sideEffects": false,

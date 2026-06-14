@@ -1,5 +1,6 @@
 import type {
   QueryClient,
+  UseQueryResult,
   UseSuspenseQueryResult,
 } from "@tanstack/react-query";
 import { makeFunctionReference } from "convex/server";
@@ -26,14 +27,24 @@ expectTypeOf(listPosts.fetchQuery(queryClient)).toEqualTypeOf<
 expectTypeOf(listPosts.prefetchQuery(queryClient)).toEqualTypeOf<
   Promise<void>
 >();
+expectTypeOf(listPosts.useQuery()).toEqualTypeOf<
+  UseQueryResult<Post[], Error>
+>();
+expectTypeOf(listPosts.useQuery({}, { enabled: false })).toEqualTypeOf<
+  UseQueryResult<Post[], Error>
+>();
 expectTypeOf(listPosts.useSuspenseQuery()).toEqualTypeOf<
   UseSuspenseQueryResult<Post[], Error>
 >();
+listPosts.useQuery({});
 listPosts.useSuspenseQuery({});
 listPosts.prefetchQuery(queryClient, {});
 
 // @ts-expect-error no-arg queries only accept an empty args object
 listPosts.useSuspenseQuery({ slug: "hello-world" });
+
+// @ts-expect-error generated query options are owned by convex-route-query
+listPosts.useQuery({}, { queryKey: ["different"] });
 
 const getPostReference = makeFunctionReference<
   "query",
@@ -48,12 +59,41 @@ expectTypeOf(
 expectTypeOf(getPost.useSuspenseQuery({ slug: "hello-world" })).toEqualTypeOf<
   UseSuspenseQueryResult<Post | null, Error>
 >();
+expectTypeOf(getPost.useQuery({ slug: "hello-world" })).toEqualTypeOf<
+  UseQueryResult<Post | null, Error>
+>();
+expectTypeOf(
+  getPost.useQuery(
+    { slug: "hello-world" },
+    {
+      enabled: true,
+      placeholderData: { slug: "loading", title: "Loading" },
+    },
+  ),
+).toEqualTypeOf<UseQueryResult<Post | null, Error>>();
+expectTypeOf(
+  getPost.useQuery(
+    { slug: "hello-world" },
+    {
+      select: (post) => post?.title ?? "Untitled",
+    },
+  ),
+).toEqualTypeOf<UseQueryResult<string, Error>>();
 
 // @ts-expect-error required query args must be provided
 getPost.useSuspenseQuery();
 
+// @ts-expect-error required query args must be provided
+getPost.useQuery();
+
 // @ts-expect-error slug must be a string
 getPost.prefetchQuery(queryClient, { slug: 123 });
 
+// @ts-expect-error slug must be a string
+getPost.useQuery({ slug: 123 });
+
 // @ts-expect-error excess args should stay rejected
 getPost.fetchQuery(queryClient, { slug: "hello-world", extra: true });
+
+// @ts-expect-error generated stale time is owned by convex-route-query
+getPost.useQuery({ slug: "hello-world" }, { staleTime: 1000 });

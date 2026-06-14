@@ -1,7 +1,15 @@
-import type { QueryClient } from "@tanstack/react-query";
-import { describe, expect, test } from "vitest";
+import {
+  useQuery as useTanStackQuery,
+  type QueryClient,
+} from "@tanstack/react-query";
+import { describe, expect, test, vi } from "vitest";
 import { makeFunctionReference } from "convex/server";
 import { createConvexRouteQuery } from "./index";
+
+vi.mock("@tanstack/react-query", () => ({
+  useQuery: vi.fn((options: unknown) => ({ options })),
+  useSuspenseQuery: vi.fn((options: unknown) => ({ options })),
+}));
 
 type Post = {
   slug: string;
@@ -83,5 +91,37 @@ describe("createConvexRouteQuery", () => {
 
     await listPosts.prefetchQuery(queryClient);
     expect(calls).toBe(1);
+  });
+
+  test("forwards generated and extra options to useQuery", () => {
+    const placeholderPost = {
+      slug: "placeholder",
+      title: "Placeholder",
+    };
+    const queryReference = makeFunctionReference<
+      "query",
+      { slug: string },
+      Post | null
+    >("blog/queries:getPost");
+    const getPost = createConvexRouteQuery(queryReference);
+
+    getPost.useQuery(
+      { slug: "hello-world" },
+      {
+        enabled: false,
+        placeholderData: placeholderPost,
+      },
+    );
+
+    expect(useTanStackQuery).toHaveBeenLastCalledWith({
+      queryKey: [
+        "convexQuery",
+        "blog/queries:getPost",
+        { slug: "hello-world" },
+      ],
+      staleTime: Number.POSITIVE_INFINITY,
+      enabled: false,
+      placeholderData: placeholderPost,
+    });
   });
 });

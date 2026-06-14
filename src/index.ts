@@ -1,9 +1,13 @@
 import { convexQuery } from "@convex-dev/react-query";
 import {
+  useQuery as useTanStackQuery,
   useSuspenseQuery as useTanStackSuspenseQuery,
+  type UseQueryOptions,
+  type UseQueryResult,
   type UseSuspenseQueryResult,
 } from "@tanstack/react-query";
 import type {
+  ArgsAndOptions,
   FunctionArgs,
   FunctionReference,
   FunctionReturnType,
@@ -16,6 +20,19 @@ export type ConvexRouteQueryOptions<Query extends FunctionReference<"query">> =
     staleTime: number;
   };
 
+export type ConvexRouteUseQueryOptions<
+  Query extends FunctionReference<"query">,
+  Data = FunctionReturnType<Query>,
+> = Omit<
+  UseQueryOptions<
+    FunctionReturnType<Query>,
+    Error,
+    Data,
+    ConvexRouteQueryOptions<Query>["queryKey"]
+  >,
+  "queryKey" | "queryFn" | "staleTime"
+>;
+
 export type ConvexRouteQuery<Query extends FunctionReference<"query">> = {
   options: (...args: OptionalRestArgs<Query>) => ConvexRouteQueryOptions<Query>;
   fetchQuery: (
@@ -26,6 +43,9 @@ export type ConvexRouteQuery<Query extends FunctionReference<"query">> = {
     queryClient: ConvexRouteQueryClient<Query>,
     ...args: OptionalRestArgs<Query>
   ) => Promise<void>;
+  useQuery: <Data = FunctionReturnType<Query>>(
+    ...args: ArgsAndOptions<Query, ConvexRouteUseQueryOptions<Query, Data>>
+  ) => UseQueryResult<Data, Error>;
   useSuspenseQuery: (
     ...args: OptionalRestArgs<Query>
   ) => UseSuspenseQueryResult<FunctionReturnType<Query>, Error>;
@@ -58,6 +78,14 @@ export function createConvexRouteQuery<
     },
     prefetchQuery(queryClient, ...args) {
       return queryClient.prefetchQuery(options(...args));
+    },
+    useQuery(...args) {
+      const [queryArgs, queryOptions] = args;
+
+      return useTanStackQuery({
+        ...options(...([queryArgs] as OptionalRestArgs<Query>)),
+        ...queryOptions,
+      });
     },
     useSuspenseQuery(...args) {
       return useTanStackSuspenseQuery(options(...args));

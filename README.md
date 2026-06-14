@@ -52,6 +52,24 @@ function BlogPostPage() {
 }
 ```
 
+Use `useQuery` for non-suspense components.
+
+```ts
+function DraftPostPage() {
+  const { slug } = Route.useParams();
+  const { data: post, isPending } = getPost.useQuery(
+    { slug },
+    { enabled: Boolean(slug) },
+  );
+
+  if (isPending) {
+    return <Spinner />;
+  }
+
+  return <PostEditor post={post} />;
+}
+```
+
 ## Install
 
 ```sh
@@ -67,6 +85,7 @@ Returns an object with:
 - `options(...args)` - the underlying `convexQuery(...)` options.
 - `fetchQuery(queryClient, ...args)` - calls `queryClient.fetchQuery(...)`.
 - `prefetchQuery(queryClient, ...args)` - calls `queryClient.prefetchQuery(...)`.
+- `useQuery(...args, queryOptions)` - calls React Query's `useQuery(...)`.
 - `useSuspenseQuery(...args)` - calls React Query's `useSuspenseQuery(...)`.
 
-The loader helpers need a `QueryClient` because loaders run outside React context. The hook reads the `QueryClient` from React context.
+The loader helpers need a `QueryClient` because loaders run outside React context. The hooks read the `QueryClient` from React context.

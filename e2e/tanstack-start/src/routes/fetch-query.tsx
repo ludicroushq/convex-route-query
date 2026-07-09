@@ -1,5 +1,5 @@
 import { createRoute } from "@tanstack/react-router";
-import { type Post } from "../convex";
+
 import { unkeyedGetPost } from "../queries";
 import { rootRoute } from "./root";
 
@@ -20,7 +20,7 @@ export const fetchQueryRoute = createRoute({
 
 function FetchQueryRouteComponent() {
   const loaderData = fetchQueryRoute.useLoaderData();
-  const post: Post | null = loaderData.post;
+  const { post } = loaderData;
 
   return <div>{post?.title ?? "Missing post"}</div>;
 }

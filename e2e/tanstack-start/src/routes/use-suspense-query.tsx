@@ -1,5 +1,6 @@
 import { createRoute } from "@tanstack/react-router";
-import { type Post } from "../convex";
+
+import type { Post } from "../convex";
 import { unkeyedGetPost } from "../queries";
 import { rootRoute } from "./root";
 

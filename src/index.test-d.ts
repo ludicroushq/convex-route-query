@@ -5,11 +5,11 @@ import type {
 } from "@tanstack/react-query";
 import { makeFunctionReference } from "convex/server";
 import { expectTypeOf } from "expect-type";
-import {
-  type ConvexRouteQueryFetchRouteResult,
-  type ConvexRouteQueryLoaderData,
-  createConvexRouteQueries,
-  createConvexRouteQuery,
+
+import { createConvexRouteQueries, createConvexRouteQuery } from "./index";
+import type {
+  ConvexRouteQueryFetchRouteResult,
+  ConvexRouteQueryLoaderData,
 } from "./index";
 
 type Post = {
@@ -62,7 +62,7 @@ const getPostReference = makeFunctionReference<
 const getPost = createConvexRouteQuery(getPostReference);
 
 expectTypeOf(
-  getPost.fetchQuery(queryClient, { slug: "hello-world" }),
+  getPost.fetchQuery(queryClient, { slug: "hello-world" })
 ).toEqualTypeOf<Promise<Post | null>>();
 expectTypeOf(getPost.useSuspenseQuery({ slug: "hello-world" })).toEqualTypeOf<
   UseSuspenseQueryResult<Post | null, Error>
@@ -76,16 +76,16 @@ expectTypeOf(
     {
       enabled: true,
       placeholderData: { slug: "loading", title: "Loading" },
-    },
-  ),
+    }
+  )
 ).toEqualTypeOf<UseQueryResult<Post | null, Error>>();
 expectTypeOf(
   getPost.useQuery(
     { slug: "hello-world" },
     {
       select: (post) => post?.title ?? "Untitled",
-    },
-  ),
+    }
+  )
 ).toEqualTypeOf<UseQueryResult<string, Error>>();
 
 // @ts-expect-error required query args must be provided
@@ -112,7 +112,7 @@ expectTypeOf(
   keyedGetPost.prefetchRoute({
     context: { queryClient },
     deps: { slug: "hello-world" },
-  }),
+  })
 ).toEqualTypeOf<
   Promise<ConvexRouteQueryLoaderData<"getPost", typeof getPostReference>>
 >();
@@ -122,8 +122,8 @@ expectTypeOf(
     {
       context: { queryClient },
     },
-    { slug: "hello-world" },
-  ),
+    { slug: "hello-world" }
+  )
 ).toEqualTypeOf<
   Promise<ConvexRouteQueryLoaderData<"getPost", typeof getPostReference>>
 >();
@@ -132,7 +132,7 @@ expectTypeOf(
   keyedGetPost.fetchRoute({
     context: { queryClient },
     deps: { slug: "hello-world" },
-  }),
+  })
 ).toEqualTypeOf<
   Promise<ConvexRouteQueryFetchRouteResult<"getPost", typeof getPostReference>>
 >();
@@ -168,7 +168,7 @@ keyedGetPost.prefetchRoute(
     context: { queryClient },
   },
   // @ts-expect-error explicit route args must match required Convex args
-  {},
+  {}
 );
 
 const keyedQueries = createConvexRouteQueries({
@@ -180,7 +180,7 @@ expectTypeOf(
   keyedQueries.getPost.prefetchRoute({
     context: { queryClient },
     deps: { slug: "hello-world" },
-  }),
+  })
 ).toEqualTypeOf<
   Promise<ConvexRouteQueryLoaderData<"getPost", typeof getPostReference>>
 >();
@@ -190,5 +190,5 @@ expectTypeOf(
     useLoaderData: () => ({
       [listPostsLoaderKey]: {},
     }),
-  }),
+  })
 ).toEqualTypeOf<UseSuspenseQueryResult<Post[], Error>>();

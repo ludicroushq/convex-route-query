@@ -1,5 +1,6 @@
 import { createRoute } from "@tanstack/react-router";
-import { type Post } from "../convex";
+
+import type { Post } from "../convex";
 import { keyedGetPost } from "../queries";
 import { rootRoute } from "./root";
 
@@ -21,7 +22,7 @@ export const keyedRoute = createRoute({
 
 function KeyedRouteComponent() {
   const loaderData = keyedRoute.useLoaderData();
-  const slug: string = loaderData.slug;
+  const { slug } = loaderData;
   const result = keyedGetPost.useSuspenseRouteQuery(keyedRoute);
   const post: Post | null = result.data;
 

@@ -1,8 +1,10 @@
 # convex-route-query
 
-Type-safe Convex query helpers for TanStack Router loaders and React Query Suspense.
+[![npm version](https://img.shields.io/npm/v/convex-route-query.svg)](https://www.npmjs.com/package/convex-route-query) [![CI](https://github.com/ludicroushq/convex-route-query/actions/workflows/ci.yml/badge.svg)](https://github.com/ludicroushq/convex-route-query/actions/workflows/ci.yml) [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-`convex-route-query` lets a route preload a Convex query once, return the typed query args as loader data, and then read the same query from the route component without rebuilding params or search state.
+Type-safe helpers for prefetching Convex queries in TanStack Router loaders and reusing the typed args in route components.
+
+`convex-route-query` lets a route loader fetch or prefetch a Convex query once, return the typed query args as loader data, and then read the same query from the route component without rebuilding params or search state. It keeps `convexQuery(...)` as the source of truth for query keys and stale time while giving TypeScript a stable route-data key to check.
 
 ```ts
 import { createFileRoute } from "@tanstack/react-router";
@@ -48,6 +50,7 @@ The loader returns the key by spreading `prefetchRoute(...)`, and the component 
 
 - [Install](#install)
 - [Before you start](#before-you-start)
+- [At a glance](#at-a-glance)
 - [Basic usage](#basic-usage)
 - [Search params](#search-params)
 - [Path params and loader work](#path-params-and-loader-work)
@@ -82,6 +85,14 @@ If you have not wired that up yet, start with the official Convex docs:
 - [TanStack Start with Convex](https://docs.convex.dev/client/tanstack/tanstack-start/)
 
 Once that setup is in place, `convex-route-query` gives you route-level helpers on top of it.
+
+## At a glance
+
+- Prefetch or fetch Convex queries from TanStack Router loaders.
+- Return typed loader data that remembers the exact query args for the route match.
+- Read those args from the route component with `useSuspenseRouteQuery(Route)`.
+- Keep generated Convex API types end to end.
+- Use normal TanStack Query options for non-suspense `useQuery`, while `convex-route-query` owns `queryKey`, `queryFn`, and `staleTime`.
 
 ## Basic usage
 

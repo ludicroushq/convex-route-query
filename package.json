@@ -1,13 +1,19 @@
 {
   "name": "convex-route-query",
   "version": "0.1.0",
-  "description": "Type-safe Convex query helpers for TanStack Router loaders and React Query Suspense.",
+  "description": "Type-safe helpers for prefetching Convex queries in TanStack Router loaders and reusing the typed args in route components.",
   "keywords": [
     "convex",
+    "convex-query",
+    "prefetch",
+    "react",
     "react-query",
+    "route-loader",
     "suspense",
     "tanstack",
+    "tanstack-query",
     "tanstack-router",
+    "tanstack-start",
     "typescript"
   ],
   "homepage": "https://github.com/ludicroushq/convex-route-query#readme",

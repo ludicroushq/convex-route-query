@@ -5,12 +5,20 @@ import type {
 } from "@tanstack/react-query";
 import { makeFunctionReference } from "convex/server";
 import { expectTypeOf } from "expect-type";
-import { createConvexRouteQuery } from "./index";
+import {
+  type ConvexRouteQueryFetchRouteResult,
+  type ConvexRouteQueryLoaderData,
+  createConvexRouteQueries,
+  createConvexRouteQuery,
+} from "./index";
 
 type Post = {
   slug: string;
   title: string;
 };
+
+const getPostLoaderKey = "__convexRouteQuery:getPost";
+const listPostsLoaderKey = "__convexRouteQuery:listPosts";
 
 const queryClient = {} as QueryClient;
 
@@ -97,3 +105,90 @@ getPost.fetchQuery(queryClient, { slug: "hello-world", extra: true });
 
 // @ts-expect-error generated stale time is owned by convex-route-query
 getPost.useQuery({ slug: "hello-world" }, { staleTime: 1000 });
+
+const keyedGetPost = createConvexRouteQuery("getPost", getPostReference);
+
+expectTypeOf(
+  keyedGetPost.prefetchRoute({
+    context: { queryClient },
+    deps: { slug: "hello-world" },
+  }),
+).toEqualTypeOf<
+  Promise<ConvexRouteQueryLoaderData<"getPost", typeof getPostReference>>
+>();
+
+expectTypeOf(
+  keyedGetPost.prefetchRoute(
+    {
+      context: { queryClient },
+    },
+    { slug: "hello-world" },
+  ),
+).toEqualTypeOf<
+  Promise<ConvexRouteQueryLoaderData<"getPost", typeof getPostReference>>
+>();
+
+expectTypeOf(
+  keyedGetPost.fetchRoute({
+    context: { queryClient },
+    deps: { slug: "hello-world" },
+  }),
+).toEqualTypeOf<
+  Promise<ConvexRouteQueryFetchRouteResult<"getPost", typeof getPostReference>>
+>();
+
+const getPostRoute = {
+  useLoaderData: () => ({
+    [getPostLoaderKey]: { slug: "hello-world" },
+    permissions: ["read"],
+  }),
+};
+
+expectTypeOf(keyedGetPost.useSuspenseRouteQuery(getPostRoute)).toEqualTypeOf<
+  UseSuspenseQueryResult<Post | null, Error>
+>();
+
+const wrongGetPostRoute = {
+  useLoaderData: () => ({
+    [listPostsLoaderKey]: {},
+  }),
+};
+
+// @ts-expect-error route loader data must contain the matching query key
+keyedGetPost.useSuspenseRouteQuery(wrongGetPostRoute);
+
+keyedGetPost.prefetchRoute({
+  context: { queryClient },
+  // @ts-expect-error route deps must match required Convex args
+  deps: {},
+});
+
+keyedGetPost.prefetchRoute(
+  {
+    context: { queryClient },
+  },
+  // @ts-expect-error explicit route args must match required Convex args
+  {},
+);
+
+const keyedQueries = createConvexRouteQueries({
+  getPost: getPostReference,
+  listPosts: listPostsReference,
+});
+
+expectTypeOf(
+  keyedQueries.getPost.prefetchRoute({
+    context: { queryClient },
+    deps: { slug: "hello-world" },
+  }),
+).toEqualTypeOf<
+  Promise<ConvexRouteQueryLoaderData<"getPost", typeof getPostReference>>
+>();
+
+expectTypeOf(
+  keyedQueries.listPosts.useSuspenseRouteQuery({
+    useLoaderData: () => ({
+      [listPostsLoaderKey]: {},
+    }),
+  }),
+).toEqualTypeOf<UseSuspenseQueryResult<Post[], Error>>();

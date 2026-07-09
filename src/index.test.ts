@@ -1,10 +1,11 @@
 import {
   useQuery as useTanStackQuery,
+  useSuspenseQuery as useTanStackSuspenseQuery,
   type QueryClient,
 } from "@tanstack/react-query";
 import { describe, expect, test, vi } from "vitest";
 import { makeFunctionReference } from "convex/server";
-import { createConvexRouteQuery } from "./index";
+import { createConvexRouteQueries, createConvexRouteQuery } from "./index";
 
 vi.mock("@tanstack/react-query", () => ({
   useQuery: vi.fn((options: unknown) => ({ options })),
@@ -15,6 +16,9 @@ type Post = {
   slug: string;
   title: string;
 };
+
+const getPostLoaderKey = "__convexRouteQuery:getPost";
+const listPostsLoaderKey = "__convexRouteQuery:listPosts";
 
 describe("createConvexRouteQuery", () => {
   test("creates Convex React Query options for queries without args", () => {
@@ -93,6 +97,94 @@ describe("createConvexRouteQuery", () => {
     expect(calls).toBe(1);
   });
 
+  test("prefetches route queries and returns keyed loader data", async () => {
+    const queryReference = makeFunctionReference<
+      "query",
+      { slug: string },
+      Post | null
+    >("blog/queries:getPost");
+    const getPost = createConvexRouteQuery("getPost", queryReference);
+    const queryClient = {
+      async prefetchQuery(options: ReturnType<typeof getPost.options>) {
+        expect(options.queryKey as unknown).toEqual([
+          "convexQuery",
+          "blog/queries:getPost",
+          { slug: "hello-world" },
+        ]);
+      },
+    } as unknown as QueryClient;
+
+    await expect(
+      getPost.prefetchRoute({
+        context: { queryClient },
+        deps: { slug: "hello-world" },
+      }),
+    ).resolves.toEqual({
+      [getPostLoaderKey]: { slug: "hello-world" },
+    });
+  });
+
+  test("fetches route queries and returns data with keyed loader data", async () => {
+    const post = { slug: "hello-world", title: "Hello World" };
+    const queryReference = makeFunctionReference<
+      "query",
+      { slug: string },
+      Post | null
+    >("blog/queries:getPost");
+    const getPost = createConvexRouteQuery("getPost", queryReference);
+    const queryClient = {
+      async fetchQuery(options: ReturnType<typeof getPost.options>) {
+        expect(options.queryKey as unknown).toEqual([
+          "convexQuery",
+          "blog/queries:getPost",
+          { slug: "hello-world" },
+        ]);
+
+        return post;
+      },
+    } as unknown as QueryClient;
+
+    await expect(
+      getPost.fetchRoute({
+        context: { queryClient },
+        deps: { slug: "hello-world" },
+      }),
+    ).resolves.toEqual({
+      data: post,
+      routeData: {
+        [getPostLoaderKey]: { slug: "hello-world" },
+      },
+    });
+  });
+
+  test("supports object-keyed route queries", async () => {
+    const queryReference = makeFunctionReference<
+      "query",
+      Record<string, never>,
+      Post[]
+    >("blog/queries:listPosts");
+    const { listPosts } = createConvexRouteQueries({
+      listPosts: queryReference,
+    });
+    const queryClient = {
+      async prefetchQuery(options: ReturnType<typeof listPosts.options>) {
+        expect(options.queryKey as unknown).toEqual([
+          "convexQuery",
+          "blog/queries:listPosts",
+          {},
+        ]);
+      },
+    } as unknown as QueryClient;
+
+    await expect(
+      listPosts.prefetchRoute({
+        context: { queryClient },
+      }),
+    ).resolves.toEqual({
+      [listPostsLoaderKey]: {},
+    });
+  });
+
   test("forwards generated and extra options to useQuery", () => {
     const placeholderPost = {
       slug: "placeholder",
@@ -122,6 +214,31 @@ describe("createConvexRouteQuery", () => {
       staleTime: Number.POSITIVE_INFINITY,
       enabled: false,
       placeholderData: placeholderPost,
+    });
+  });
+
+  test("reads route loader data for useSuspenseRouteQuery", () => {
+    const queryReference = makeFunctionReference<
+      "query",
+      { slug: string },
+      Post | null
+    >("blog/queries:getPost");
+    const getPost = createConvexRouteQuery("getPost", queryReference);
+    const route = {
+      useLoaderData: () => ({
+        [getPostLoaderKey]: { slug: "hello-world" },
+      }),
+    };
+
+    getPost.useSuspenseRouteQuery(route);
+
+    expect(useTanStackSuspenseQuery).toHaveBeenLastCalledWith({
+      queryKey: [
+        "convexQuery",
+        "blog/queries:getPost",
+        { slug: "hello-world" },
+      ],
+      staleTime: Number.POSITIVE_INFINITY,
     });
   });
 });

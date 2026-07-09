@@ -1,0 +1,14 @@
+import { type QueryClient } from "@tanstack/react-query";
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+
+export type RouterContext = {
+  queryClient: QueryClient;
+};
+
+export const rootRoute = createRootRouteWithContext<RouterContext>()({
+  component: RootComponent,
+});
+
+function RootComponent() {
+  return <Outlet />;
+}

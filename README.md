@@ -1,11 +1,8 @@
 # convex-route-query
 
-Type-safe Convex query helpers for TanStack Router loaders and React Query
-Suspense.
+Type-safe Convex query helpers for TanStack Router loaders and React Query Suspense.
 
-`convex-route-query` lets a route preload a Convex query once, return the typed
-query args as loader data, and then read the same query from the route component
-without rebuilding params or search state.
+`convex-route-query` lets a route preload a Convex query once, return the typed query args as loader data, and then read the same query from the route component without rebuilding params or search state.
 
 ```ts
 import { createFileRoute } from "@tanstack/react-router";
@@ -32,14 +29,12 @@ function ExperiencePage() {
 
 ## Why this exists
 
-Convex, TanStack Router, and TanStack Query fit together beautifully, but route
-data loading can still get repetitive:
+Convex, TanStack Router, and TanStack Query fit together beautifully, but route data loading can still get repetitive:
 
 - The loader has the route params, validated search params, and `QueryClient`.
 - The component needs the same Convex args again to call `useSuspenseQuery`.
 - Convex query args should stay inferred from the generated `api`.
-- `queryKey`, `queryFn`, and `staleTime` should come from `convexQuery(...)`, not
-  be rewritten by hand.
+- `queryKey`, `queryFn`, and `staleTime` should come from `convexQuery(...)`, not be rewritten by hand.
 
 This package gives each query a stable typed route key:
 
@@ -47,9 +42,7 @@ This package gives each query a stable typed route key:
 const getPost = createConvexRouteQuery("getPost", api.blog.queries.getPost);
 ```
 
-The loader returns the key by spreading `prefetchRoute(...)`, and the component
-uses that key with `useSuspenseRouteQuery(Route)`. TypeScript makes sure those
-two sides match.
+The loader returns the key by spreading `prefetchRoute(...)`, and the component uses that key with `useSuspenseRouteQuery(Route)`. TypeScript makes sure those two sides match.
 
 ## Table of contents
 
@@ -80,8 +73,7 @@ bun add @convex-dev/react-query @tanstack/react-query convex react
 
 ## Before you start
 
-This package assumes Convex is already configured with TanStack Query and that
-your TanStack Router context exposes a `queryClient` to route loaders.
+This package assumes Convex is already configured with TanStack Query and that your TanStack Router context exposes a `queryClient` to route loaders.
 
 If you have not wired that up yet, start with the official Convex docs:
 
@@ -89,13 +81,11 @@ If you have not wired that up yet, start with the official Convex docs:
 - [TanStack Start quickstart](https://docs.convex.dev/quickstart/tanstack-start)
 - [TanStack Start with Convex](https://docs.convex.dev/client/tanstack/tanstack-start/)
 
-Once that setup is in place, `convex-route-query` gives you route-level helpers
-on top of it.
+Once that setup is in place, `convex-route-query` gives you route-level helpers on top of it.
 
 ## Basic usage
 
-Use `createConvexRouteQueries(...)` when you want keys inferred from object
-property names.
+Use `createConvexRouteQueries(...)` when you want keys inferred from object property names.
 
 ```ts
 import { createFileRoute } from "@tanstack/react-router";
@@ -120,15 +110,11 @@ function BlogIndexPage() {
 }
 ```
 
-`prefetchRoute(ctx)` warms the TanStack Query cache and returns a small typed
-loader-data fragment. `useSuspenseRouteQuery(Route)` reads that fragment from
-`Route.useLoaderData()` and subscribes to the same Convex query.
+`prefetchRoute(ctx)` warms the TanStack Query cache and returns a small typed loader-data fragment. `useSuspenseRouteQuery(Route)` reads that fragment from `Route.useLoaderData()` and subscribes to the same Convex query.
 
 ## Search params
 
-When search params drive the query, put the exact Convex args in
-`loaderDeps`. TanStack Router will reload when those deps change, and
-`prefetchRoute(ctx)` can use `ctx.deps` automatically.
+When search params drive the query, put the exact Convex args in `loaderDeps`. TanStack Router will reload when those deps change, and `prefetchRoute(ctx)` can use `ctx.deps` automatically.
 
 ```ts
 import { createFileRoute } from "@tanstack/react-router";
@@ -164,21 +150,17 @@ function BlogIndexPage() {
 }
 ```
 
-The component does not call `Route.useSearch()` or rebuild the query args. The
-loader already serialized the typed query args for this route match.
+The component does not call `Route.useSearch()` or rebuild the query args. The loader already serialized the typed query args for this route match.
 
 ## Path params and loader work
 
-Use an explicit key when you only need one query, or when you prefer to name it
-directly.
+Use an explicit key when you only need one query, or when you prefer to name it directly.
 
 ```ts
 const getPost = createConvexRouteQuery("getPost", api.blog.queries.getPost);
 ```
 
-For path params, or any loader that needs to combine params with other data, pass
-the Convex args to `fetchRoute` or `prefetchRoute` explicitly. The component
-still reads them from loader data.
+For path params, or any loader that needs to combine params with other data, pass the Convex args to `fetchRoute` or `prefetchRoute` explicitly. The component still reads them from loader data.
 
 ```ts
 import { createFileRoute, notFound } from "@tanstack/react-router";
@@ -213,9 +195,7 @@ function BlogPostPage() {
 }
 ```
 
-Your loader can keep doing normal loader work: auth, redirects, extra prefetches,
-metadata, and anything else. Just include the route data returned by
-`prefetchRoute(...)` or `fetchRoute(...).routeData`.
+Your loader can keep doing normal loader work: auth, redirects, extra prefetches, metadata, and anything else. Just include the route data returned by `prefetchRoute(...)` or `fetchRoute(...).routeData`.
 
 ## Non-suspense usage
 
@@ -237,8 +217,7 @@ function DraftPostPage() {
 }
 ```
 
-`useQuery` accepts normal TanStack Query options except the generated Convex
-options owned by this package: `queryKey`, `queryFn`, and `staleTime`.
+`useQuery` accepts normal TanStack Query options except the generated Convex options owned by this package: `queryKey`, `queryFn`, and `staleTime`.
 
 ## API reference
 
@@ -248,8 +227,7 @@ options owned by this package: `queryKey`, `queryFn`, and `staleTime`.
 const query = createConvexRouteQuery(api.someModule.someQuery);
 ```
 
-Creates the low-level helper. The runtime route key is derived from the Convex
-function name, but TypeScript only sees a general `string` key.
+Creates the low-level helper. The runtime route key is derived from the Convex function name, but TypeScript only sees a general `string` key.
 
 ### `createConvexRouteQuery(id, query)`
 
@@ -272,26 +250,21 @@ Creates route-aware helpers whose typed keys are inferred from the object keys.
 
 ### Helpers
 
-| Helper                                | Use it when                                                    | Returns                              |
-| ------------------------------------- | -------------------------------------------------------------- | ------------------------------------ |
-| `options(...args)`                    | You need the underlying `convexQuery(...)` options.            | Convex query options                 |
-| `fetchQuery(queryClient, ...args)`    | A loader or utility needs the query result directly.           | `Promise<FunctionReturnType<Query>>` |
-| `prefetchQuery(queryClient, ...args)` | A loader or utility should warm the cache directly.            | `Promise<void>`                      |
-| `fetchRoute(ctx, ...args?)`           | A loader needs the result and a typed route-data fragment.     | `{ data, routeData }`                |
-| `prefetchRoute(ctx, ...args?)`        | A loader should warm the cache and return route data.          | Typed route-data fragment            |
-| `useSuspenseRouteQuery(Route)`        | A route component should read the query args from loader data. | Suspense query result                |
-| `useQuery(...args, queryOptions)`     | A component wants non-suspense query state.                    | Query result                         |
-| `useSuspenseQuery(...args)`           | A component already has the args available.                    | Suspense query result                |
+| Helper | Use it when | Returns |
+| --- | --- | --- |
+| `options(...args)` | You need the underlying `convexQuery(...)` options. | Convex query options |
+| `fetchQuery(queryClient, ...args)` | A loader or utility needs the query result directly. | `Promise<FunctionReturnType<Query>>` |
+| `prefetchQuery(queryClient, ...args)` | A loader or utility should warm the cache directly. | `Promise<void>` |
+| `fetchRoute(ctx, ...args?)` | A loader needs the result and a typed route-data fragment. | `{ data, routeData }` |
+| `prefetchRoute(ctx, ...args?)` | A loader should warm the cache and return route data. | Typed route-data fragment |
+| `useSuspenseRouteQuery(Route)` | A route component should read the query args from loader data. | Suspense query result |
+| `useQuery(...args, queryOptions)` | A component wants non-suspense query state. | Query result |
+| `useSuspenseQuery(...args)` | A component already has the args available. | Suspense query result |
 
-The route helpers need `ctx.context.queryClient`. If no args are passed to
-`fetchRoute` or `prefetchRoute`, the helper uses `ctx.deps`.
+The route helpers need `ctx.context.queryClient`. If no args are passed to `fetchRoute` or `prefetchRoute`, the helper uses `ctx.deps`.
 
 ## Notes
 
-- This package is intentionally small. It wraps Convex queries for route loading
-  and component reads; mutations and actions should use the normal Convex and
-  TanStack Query APIs.
-- The internal loader-data key is stable and typed from your explicit key or from
-  `createConvexRouteQueries(...)` object keys.
-- Convex query options are generated by `@convex-dev/react-query`, including the
-  query key and infinite stale time.
+- This package is intentionally small. It wraps Convex queries for route loading and component reads; mutations and actions should use the normal Convex and TanStack Query APIs.
+- The internal loader-data key is stable and typed from your explicit key or from `createConvexRouteQueries(...)` object keys.
+- Convex query options are generated by `@convex-dev/react-query`, including the query key and infinite stale time.

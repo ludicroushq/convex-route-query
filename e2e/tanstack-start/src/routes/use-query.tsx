@@ -1,4 +1,5 @@
 import { createRoute } from "@tanstack/react-router";
+
 import { unkeyedGetPost } from "../queries";
 import { rootRoute } from "./root";
 
@@ -17,7 +18,7 @@ function UseQueryRouteComponent() {
     { slug },
     {
       select: (post) => post?.title ?? "Untitled",
-    },
+    }
   );
   const title: string | undefined = result.data;
 

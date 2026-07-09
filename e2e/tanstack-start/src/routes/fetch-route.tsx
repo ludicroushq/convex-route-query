@@ -1,5 +1,6 @@
 import { createRoute } from "@tanstack/react-router";
-import { type Post } from "../convex";
+
+import type { Post } from "../convex";
 import { keyedGetPost } from "../queries";
 import { rootRoute } from "./root";
 
@@ -22,7 +23,7 @@ export const fetchRouteRoute = createRoute({
 
 function FetchRouteRouteComponent() {
   const loaderData = fetchRouteRoute.useLoaderData();
-  const title: string = loaderData.title;
+  const { title } = loaderData;
   const result = keyedGetPost.useSuspenseRouteQuery(fetchRouteRoute);
   const post: Post | null = result.data;
 

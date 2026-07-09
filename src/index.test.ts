@@ -1,15 +1,20 @@
 import {
   useQuery as useTanStackQuery,
   useSuspenseQuery as useTanStackSuspenseQuery,
-  type QueryClient,
 } from "@tanstack/react-query";
-import { describe, expect, test, vi } from "vitest";
+import type { QueryClient } from "@tanstack/react-query";
 import { makeFunctionReference } from "convex/server";
+import { describe, expect, test, vi } from "vitest";
+
 import { createConvexRouteQueries, createConvexRouteQuery } from "./index";
 
-vi.mock("@tanstack/react-query", () => ({
-  useQuery: vi.fn((options: unknown) => ({ options })),
-  useSuspenseQuery: vi.fn((options: unknown) => ({ options })),
+vi.mock(import("@tanstack/react-query"), () => ({
+  useQuery: vi.fn<(options: unknown) => unknown>((options) => ({
+    options,
+  })) as unknown as typeof useTanStackQuery,
+  useSuspenseQuery: vi.fn<(options: unknown) => unknown>((options) => ({
+    options,
+  })) as unknown as typeof useTanStackSuspenseQuery,
 }));
 
 type Post = {
@@ -20,7 +25,7 @@ type Post = {
 const getPostLoaderKey = "__convexRouteQuery:getPost";
 const listPostsLoaderKey = "__convexRouteQuery:listPosts";
 
-describe("createConvexRouteQuery", () => {
+describe(createConvexRouteQuery, () => {
   test("creates Convex React Query options for queries without args", () => {
     const queryReference = makeFunctionReference<
       "query",
@@ -29,7 +34,7 @@ describe("createConvexRouteQuery", () => {
     >("blog/queries:listPosts");
     const listPosts = createConvexRouteQuery(queryReference);
 
-    expect(listPosts.options().queryKey as unknown).toEqual([
+    expect(listPosts.options().queryKey as unknown).toStrictEqual([
       "convexQuery",
       "blog/queries:listPosts",
       {},
@@ -45,8 +50,12 @@ describe("createConvexRouteQuery", () => {
     const getPost = createConvexRouteQuery(queryReference);
 
     expect(
-      getPost.options({ slug: "hello-world" }).queryKey as unknown,
-    ).toEqual(["convexQuery", "blog/queries:getPost", { slug: "hello-world" }]);
+      getPost.options({ slug: "hello-world" }).queryKey as unknown
+    ).toStrictEqual([
+      "convexQuery",
+      "blog/queries:getPost",
+      { slug: "hello-world" },
+    ]);
   });
 
   test("forwards options to fetchQuery", async () => {
@@ -58,20 +67,20 @@ describe("createConvexRouteQuery", () => {
     >("blog/queries:getPost");
     const getPost = createConvexRouteQuery(queryReference);
     const queryClient = {
-      async fetchQuery(options: ReturnType<typeof getPost.options>) {
-        expect(options.queryKey as unknown).toEqual([
+      fetchQuery(options: ReturnType<typeof getPost.options>) {
+        expect(options.queryKey as unknown).toStrictEqual([
           "convexQuery",
           "blog/queries:getPost",
           { slug: "hello-world" },
         ]);
 
-        return post;
+        return Promise.resolve(post);
       },
     } as unknown as QueryClient;
 
     await expect(
-      getPost.fetchQuery(queryClient, { slug: "hello-world" }),
-    ).resolves.toEqual(post);
+      getPost.fetchQuery(queryClient, { slug: "hello-world" })
+    ).resolves.toStrictEqual(post);
   });
 
   test("forwards options to prefetchQuery", async () => {
@@ -83,13 +92,15 @@ describe("createConvexRouteQuery", () => {
     const listPosts = createConvexRouteQuery(queryReference);
     let calls = 0;
     const queryClient = {
-      async prefetchQuery(options: ReturnType<typeof listPosts.options>) {
+      prefetchQuery(options: ReturnType<typeof listPosts.options>) {
         calls += 1;
-        expect(options.queryKey as unknown).toEqual([
+        expect(options.queryKey as unknown).toStrictEqual([
           "convexQuery",
           "blog/queries:listPosts",
           {},
         ]);
+
+        return Promise.resolve();
       },
     } as unknown as QueryClient;
 
@@ -105,12 +116,14 @@ describe("createConvexRouteQuery", () => {
     >("blog/queries:getPost");
     const getPost = createConvexRouteQuery("getPost", queryReference);
     const queryClient = {
-      async prefetchQuery(options: ReturnType<typeof getPost.options>) {
-        expect(options.queryKey as unknown).toEqual([
+      prefetchQuery(options: ReturnType<typeof getPost.options>) {
+        expect(options.queryKey as unknown).toStrictEqual([
           "convexQuery",
           "blog/queries:getPost",
           { slug: "hello-world" },
         ]);
+
+        return Promise.resolve();
       },
     } as unknown as QueryClient;
 
@@ -118,8 +131,8 @@ describe("createConvexRouteQuery", () => {
       getPost.prefetchRoute({
         context: { queryClient },
         deps: { slug: "hello-world" },
-      }),
-    ).resolves.toEqual({
+      })
+    ).resolves.toStrictEqual({
       [getPostLoaderKey]: { slug: "hello-world" },
     });
   });
@@ -133,14 +146,14 @@ describe("createConvexRouteQuery", () => {
     >("blog/queries:getPost");
     const getPost = createConvexRouteQuery("getPost", queryReference);
     const queryClient = {
-      async fetchQuery(options: ReturnType<typeof getPost.options>) {
-        expect(options.queryKey as unknown).toEqual([
+      fetchQuery(options: ReturnType<typeof getPost.options>) {
+        expect(options.queryKey as unknown).toStrictEqual([
           "convexQuery",
           "blog/queries:getPost",
           { slug: "hello-world" },
         ]);
 
-        return post;
+        return Promise.resolve(post);
       },
     } as unknown as QueryClient;
 
@@ -148,8 +161,8 @@ describe("createConvexRouteQuery", () => {
       getPost.fetchRoute({
         context: { queryClient },
         deps: { slug: "hello-world" },
-      }),
-    ).resolves.toEqual({
+      })
+    ).resolves.toStrictEqual({
       data: post,
       routeData: {
         [getPostLoaderKey]: { slug: "hello-world" },
@@ -167,20 +180,22 @@ describe("createConvexRouteQuery", () => {
       listPosts: queryReference,
     });
     const queryClient = {
-      async prefetchQuery(options: ReturnType<typeof listPosts.options>) {
-        expect(options.queryKey as unknown).toEqual([
+      prefetchQuery(options: ReturnType<typeof listPosts.options>) {
+        expect(options.queryKey as unknown).toStrictEqual([
           "convexQuery",
           "blog/queries:listPosts",
           {},
         ]);
+
+        return Promise.resolve();
       },
     } as unknown as QueryClient;
 
     await expect(
       listPosts.prefetchRoute({
         context: { queryClient },
-      }),
-    ).resolves.toEqual({
+      })
+    ).resolves.toStrictEqual({
       [listPostsLoaderKey]: {},
     });
   });
@@ -202,7 +217,7 @@ describe("createConvexRouteQuery", () => {
       {
         enabled: false,
         placeholderData: placeholderPost,
-      },
+      }
     );
 
     expect(useTanStackQuery).toHaveBeenLastCalledWith({

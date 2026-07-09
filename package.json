@@ -1,4 +1,76 @@
 {
+  "name": "convex-route-query",
+  "version": "0.1.0",
+  "description": "Type-safe Convex query helpers for TanStack Router loaders and React Query Suspense.",
+  "keywords": [
+    "convex",
+    "react-query",
+    "suspense",
+    "tanstack",
+    "tanstack-router",
+    "typescript"
+  ],
+  "homepage": "https://github.com/ludicroushq/convex-route-query#readme",
+  "bugs": {
+    "url": "https://github.com/ludicroushq/convex-route-query/issues"
+  },
+  "license": "MIT",
+  "author": "ludicrous",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ludicroushq/convex-route-query.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/index.d.mts",
+        "require": "./dist/index.d.cts"
+      },
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "concurrently --raw --names tsdown \"bun run build:tsdown\"",
+    "build:tsdown": "tsdown",
+    "ci": "bun run ci:test && bun run build && bun run lint:pkg",
+    "ci:test": "concurrently --raw --names runtime,types,e2e,ultracite \"bun run ci:test:runtime\" \"bun run ci:test:types\" \"bun run ci:test:e2e\" \"bun run ci:test:ultracite\"",
+    "ci:test:e2e": "bun run test:e2e:tanstack-start",
+    "ci:test:runtime": "vitest run",
+    "ci:test:types": "tsc --noEmit",
+    "ci:test:ultracite": "ultracite check",
+    "dev": "concurrently --raw --names tsdown \"bun run dev:tsdown\"",
+    "dev:tsdown": "tsdown --watch",
+    "lint:pkg": "concurrently --raw --names publint,attw \"bun run lint:pkg:publint\" \"bun run lint:pkg:attw\"",
+    "lint:pkg:attw": "attw --pack .",
+    "lint:pkg:publint": "publint",
+    "prepare": "lefthook install",
+    "prepublishOnly": "bun run ci",
+    "release": "bun run build && changeset publish",
+    "test": "concurrently --raw --names runtime,types,e2e,ultracite \"bun run test:runtime\" \"bun run test:types\" \"bun run test:e2e:tanstack-start\" \"bun run test:ultracite\"",
+    "test:e2e:tanstack-start": "tsc -p e2e/tanstack-start/tsconfig.json --noEmit",
+    "test:runtime": "vitest run",
+    "test:types": "tsc --noEmit",
+    "test:ultracite": "ultracite check",
+    "typecheck": "bun run test:types",
+    "ultracite": "ultracite check",
+    "ultracite:fix": "ultracite fix",
+    "version": "changeset version && bun install --lockfile-only"
+  },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.3",
     "@changesets/cli": "^2.31.0",
@@ -25,81 +97,11 @@
     "vitest": "^4.1.8",
     "zod": "^4.4.3"
   },
-  "name": "convex-route-query",
   "peerDependencies": {
     "@convex-dev/react-query": ">=0.1.0",
     "@tanstack/react-query": ">=5.0.0",
     "convex": ">=1.0.0",
     "react": ">=18.0.0"
-  },
-  "scripts": {
-    "build": "concurrently --raw --names tsdown \"bun run build:tsdown\"",
-    "build:tsdown": "tsdown",
-    "ci": "bun run ci:test && bun run build && bun run lint:pkg",
-    "ci:test": "concurrently --raw --names runtime,types,e2e \"bun run ci:test:runtime\" \"bun run ci:test:types\" \"bun run ci:test:e2e\"",
-    "ci:test:e2e": "bun run test:e2e:tanstack-start",
-    "ci:test:runtime": "vitest run",
-    "ci:test:types": "tsc --noEmit",
-    "dev": "concurrently --raw --names tsdown \"bun run dev:tsdown\"",
-    "dev:tsdown": "tsdown --watch",
-    "lint:pkg": "concurrently --raw --names publint,attw \"bun run lint:pkg:publint\" \"bun run lint:pkg:attw\"",
-    "lint:pkg:attw": "attw --pack .",
-    "lint:pkg:publint": "publint",
-    "prepublishOnly": "bun run ci",
-    "release": "bun run build && changeset publish",
-    "test": "concurrently --raw --names runtime,types,e2e \"bun run test:runtime\" \"bun run test:types\" \"bun run test:e2e:tanstack-start\"",
-    "test:e2e:tanstack-start": "tsc -p e2e/tanstack-start/tsconfig.json --noEmit",
-    "test:runtime": "vitest run",
-    "test:types": "tsc --noEmit",
-    "typecheck": "bun run test:types",
-    "version": "changeset version && bun install --lockfile-only",
-    "check": "ultracite check",
-    "fix": "ultracite fix",
-    "prepare": "lefthook install"
-  },
-  "type": "module",
-  "version": "0.1.0",
-  "description": "Type-safe Convex query helpers for TanStack Router loaders and React Query Suspense.",
-  "sideEffects": false,
-  "exports": {
-    ".": {
-      "types": {
-        "import": "./dist/index.d.mts",
-        "require": "./dist/index.d.cts"
-      },
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    }
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "keywords": [
-    "convex",
-    "tanstack",
-    "tanstack-router",
-    "react-query",
-    "suspense",
-    "typescript"
-  ],
-  "author": "ludicrous",
-  "license": "MIT",
-  "homepage": "https://github.com/ludicroushq/convex-route-query#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ludicroushq/convex-route-query.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ludicroushq/convex-route-query/issues"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
   },
   "engines": {
     "node": ">=20.0.0"

@@ -2,17 +2,19 @@ import { convexQuery } from "@convex-dev/react-query";
 import {
   useQuery as useTanStackQuery,
   useSuspenseQuery as useTanStackSuspenseQuery,
-  type UseQueryOptions,
-  type UseQueryResult,
-  type UseSuspenseQueryResult,
 } from "@tanstack/react-query";
-import {
-  getFunctionName,
-  type ArgsAndOptions,
-  type FunctionArgs,
-  type FunctionReference,
-  type FunctionReturnType,
-  type OptionalRestArgs,
+import type {
+  UseQueryOptions,
+  UseQueryResult,
+  UseSuspenseQueryResult,
+} from "@tanstack/react-query";
+import { getFunctionName } from "convex/server";
+import type {
+  ArgsAndOptions,
+  FunctionArgs,
+  FunctionReference,
+  FunctionReturnType,
+  OptionalRestArgs,
 } from "convex/server";
 
 const routeDataKeyPrefix = "__convexRouteQuery:";
@@ -59,7 +61,7 @@ export type ConvexRouteQuery<
   ) => Promise<void>;
   fetchRoute: {
     (
-      routeContext: ConvexRouteQueryRouteContext<Query>,
+      routeContext: ConvexRouteQueryRouteContext<Query>
     ): Promise<ConvexRouteQueryFetchRouteResult<Id, Query>>;
     (
       routeContext: ConvexRouteQueryClientContext<Query>,
@@ -68,7 +70,7 @@ export type ConvexRouteQuery<
   };
   prefetchRoute: {
     (
-      routeContext: ConvexRouteQueryRouteContext<Query>,
+      routeContext: ConvexRouteQueryRouteContext<Query>
     ): Promise<ConvexRouteQueryLoaderData<Id, Query>>;
     (
       routeContext: ConvexRouteQueryClientContext<Query>,
@@ -79,7 +81,7 @@ export type ConvexRouteQuery<
     ...args: ArgsAndOptions<Query, ConvexRouteUseQueryOptions<Query, Data>>
   ) => UseQueryResult<Data, Error>;
   useSuspenseRouteQuery: (
-    route: ConvexRouteQueryRoute<Id, Query>,
+    route: ConvexRouteQueryRoute<Id, Query>
   ) => UseSuspenseQueryResult<FunctionReturnType<Query>, Error>;
   useSuspenseQuery: (
     ...args: OptionalRestArgs<Query>
@@ -144,7 +146,7 @@ export function createConvexRouteQuery<
   Query extends FunctionReference<"query">,
 >(
   idOrQuery: Id | Query,
-  maybeQuery?: Query,
+  maybeQuery?: Query
 ): ConvexRouteQuery<Query, Id | string> {
   const query = (maybeQuery ?? idOrQuery) as Query;
   const id =
@@ -165,15 +167,20 @@ export function createConvexRouteQuery<
     routeContext:
       | ConvexRouteQueryClientContext<Query>
       | ConvexRouteQueryRouteContext<Query>,
-    args: OptionalRestArgs<Query>,
-  ) =>
-    (args.length > 0
-      ? args[0]
-      : "deps" in routeContext && routeContext.deps !== undefined
-        ? routeContext.deps
-        : {}) as FunctionArgs<Query>;
+    args: OptionalRestArgs<Query>
+  ) => {
+    if (args.length > 0) {
+      return args[0] as FunctionArgs<Query>;
+    }
+
+    if ("deps" in routeContext && routeContext.deps !== undefined) {
+      return routeContext.deps as FunctionArgs<Query>;
+    }
+
+    return {} as FunctionArgs<Query>;
+  };
   const getLoaderDataArgs = (
-    loaderData: ConvexRouteQueryLoaderData<Id, Query>,
+    loaderData: ConvexRouteQueryLoaderData<Id, Query>
   ) => {
     if (
       typeof loaderData !== "object" ||
@@ -181,7 +188,7 @@ export function createConvexRouteQuery<
       !(loaderDataKey in loaderData)
     ) {
       throw new Error(
-        `Missing convex-route-query loader data for "${String(id)}". Return the result of prefetchRoute(...) from this route's loader.`,
+        `Missing convex-route-query loader data for "${String(id)}". Return the result of prefetchRoute(...) from this route's loader.`
       );
     }
 
@@ -204,7 +211,7 @@ export function createConvexRouteQuery<
       const routeArgs = args as OptionalRestArgs<Query>;
       const queryArgs = getRouteArgs(routeContext, routeArgs);
       const data = await routeContext.context.queryClient.fetchQuery(
-        options(...([queryArgs] as OptionalRestArgs<Query>)),
+        options(...([queryArgs] as OptionalRestArgs<Query>))
       );
 
       return {
@@ -217,7 +224,7 @@ export function createConvexRouteQuery<
       const queryArgs = getRouteArgs(routeContext, routeArgs);
 
       await routeContext.context.queryClient.prefetchQuery(
-        options(...([queryArgs] as OptionalRestArgs<Query>)),
+        options(...([queryArgs] as OptionalRestArgs<Query>))
       );
 
       return createLoaderData(queryArgs);
@@ -235,7 +242,7 @@ export function createConvexRouteQuery<
       const queryArgs = getLoaderDataArgs(loaderData);
 
       return useTanStackSuspenseQuery(
-        options(...([queryArgs] as OptionalRestArgs<Query>)),
+        options(...([queryArgs] as OptionalRestArgs<Query>))
       );
     },
     useSuspenseQuery(...args) {
@@ -247,7 +254,7 @@ export function createConvexRouteQuery<
 export function createConvexRouteQueries<
   const Queries extends Record<string, FunctionReference<"query">>,
 >(
-  queries: Queries,
+  queries: Queries
 ): {
   [Id in keyof Queries & string]: ConvexRouteQuery<Queries[Id], Id>;
 } {
@@ -255,7 +262,7 @@ export function createConvexRouteQueries<
     Object.entries(queries).map(([id, query]) => [
       id,
       createConvexRouteQuery(id, query),
-    ]),
+    ])
   ) as unknown as {
     [Id in keyof Queries & string]: ConvexRouteQuery<Queries[Id], Id>;
   };

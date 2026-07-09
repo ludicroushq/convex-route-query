@@ -1,5 +1,6 @@
 import { createRoute } from "@tanstack/react-router";
-import { type Post } from "../convex";
+
+import type { Post } from "../convex";
 import { unkeyedGetPost } from "../queries";
 import { rootRoute } from "./root";
 
@@ -8,7 +9,7 @@ export const unkeyedRoute = createRoute({
   path: "/unkeyed/$slug",
   loader: async ({ context, params }) => {
     const options = unkeyedGetPost.options({ slug: params.slug });
-    const args: { slug: string } = options.queryKey[2];
+    const { 2: args } = options.queryKey;
 
     await context.queryClient.prefetchQuery(options);
 

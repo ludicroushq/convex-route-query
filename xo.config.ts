@@ -21,6 +21,17 @@ const xoConfig: FlatXoConfig = [
       "@typescript-eslint/no-floating-promises": "off",
     },
   },
+  {
+    files: ["e2e/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/consistent-type-definitions": "off",
+      "import-x/no-extraneous-dependencies": "off",
+      "n/no-extraneous-import": "off",
+      "object-shorthand": "off",
+      "prefer-destructuring": "off",
+      "unicorn/prefer-top-level-await": "off",
+    },
+  },
 ];
 
 export default xoConfig;

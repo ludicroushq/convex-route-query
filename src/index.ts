@@ -18,6 +18,7 @@ import type {
 } from "convex/server";
 
 const routeDataKeyPrefix = "__convexRouteQuery:";
+const tanStackRouterNoLoaderDeps = "";
 
 export type ConvexRouteQueryLoaderKey<Id extends string> =
   `${typeof routeDataKeyPrefix}${Id}`;
@@ -168,16 +169,19 @@ export function createConvexRouteQuery<
       | ConvexRouteQueryClientContext<Query>
       | ConvexRouteQueryRouteContext<Query>,
     args: OptionalRestArgs<Query>
-  ) => {
+  ): FunctionArgs<Query> => {
     if (args.length > 0) {
       return args[0] as FunctionArgs<Query>;
     }
 
-    if ("deps" in routeContext && routeContext.deps !== undefined) {
-      return routeContext.deps as FunctionArgs<Query>;
+    const routeDeps: unknown =
+      "deps" in routeContext ? routeContext.deps : undefined;
+
+    if (routeDeps === undefined || routeDeps === tanStackRouterNoLoaderDeps) {
+      return {} as FunctionArgs<Query>;
     }
 
-    return {} as FunctionArgs<Query>;
+    return routeDeps as FunctionArgs<Query>;
   };
   const getLoaderDataArgs = (
     loaderData: ConvexRouteQueryLoaderData<Id, Query>

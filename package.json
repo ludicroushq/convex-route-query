@@ -1,6 +1,6 @@
 {
   "name": "convex-route-query",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Type-safe helpers for prefetching Convex queries in TanStack Router loaders and reusing the typed args in route components.",
   "keywords": [
     "convex",

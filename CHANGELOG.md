@@ -1,5 +1,12 @@
 # convex-route-query
 
+## 0.1.1
+
+### Patch Changes
+
+- c86ab3b: Normalize TanStack Router's missing loader-deps sentinel for zero-argument route queries.
+- 8c94a8b: Refresh the package description, discovery keywords, and README launch copy.
+
 ## 0.1.0
 
 ### Minor Changes

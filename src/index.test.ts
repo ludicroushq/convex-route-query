@@ -200,6 +200,68 @@ describe(createConvexRouteQuery, () => {
     });
   });
 
+  test("normalizes TanStack Router's missing loader deps sentinel", async () => {
+    const queryReference = makeFunctionReference<
+      "query",
+      Record<string, never>,
+      Post[]
+    >("blog/queries:listPosts");
+    const { listPosts } = createConvexRouteQueries({
+      listPosts: queryReference,
+    });
+    const queryClient = {
+      prefetchQuery(options: ReturnType<typeof listPosts.options>) {
+        expect(options.queryKey as unknown).toStrictEqual([
+          "convexQuery",
+          "blog/queries:listPosts",
+          {},
+        ]);
+
+        return Promise.resolve();
+      },
+    } as unknown as QueryClient;
+
+    await expect(
+      listPosts.prefetchRoute({
+        context: { queryClient },
+        // TanStack Router types missing loader deps as `{}` but passes `""`.
+        deps: "" as never,
+      })
+    ).resolves.toStrictEqual({
+      [listPostsLoaderKey]: {},
+    });
+  });
+
+  test("prioritizes explicit route args over loader deps", async () => {
+    const queryReference = makeFunctionReference<
+      "query",
+      { slug: string },
+      Post | null
+    >("blog/queries:getPost");
+    const getPost = createConvexRouteQuery("getPost", queryReference);
+    const queryClient = {
+      prefetchQuery(options: ReturnType<typeof getPost.options>) {
+        expect(options.queryKey as unknown).toStrictEqual([
+          "convexQuery",
+          "blog/queries:getPost",
+          { slug: "explicit" },
+        ]);
+
+        return Promise.resolve();
+      },
+    } as unknown as QueryClient;
+    const routeContext = {
+      context: { queryClient },
+      deps: { slug: "loader-deps" },
+    };
+
+    await expect(
+      getPost.prefetchRoute(routeContext, { slug: "explicit" })
+    ).resolves.toStrictEqual({
+      [getPostLoaderKey]: { slug: "explicit" },
+    });
+  });
+
   test("forwards generated and extra options to useQuery", () => {
     const placeholderPost = {
       slug: "placeholder",

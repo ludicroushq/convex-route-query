@@ -1,5 +1,11 @@
 # convex-route-query
 
+## 0.1.2
+
+### Patch Changes
+
+- 7cacb53: Align peer dependency ranges with the supported Convex TanStack Query adapter contract.
+
 ## 0.1.1
 
 ### Patch Changes
